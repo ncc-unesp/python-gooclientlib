@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # This code is based on slumber, but dont uses requests.
 # Now we are using pure urllib2.
-
 import urllib2
 import base64
 import mmap
@@ -9,10 +8,14 @@ import urllib
 import urlparse
 import posixpath
 import pprint
+import itertools
+import mimetools
+import mimetypes
+from cStringIO import StringIO
+
 from django.http import HttpResponse
 from exceptions import *
 from serialize import Serializer
-
 
 class RequestWithMethod(urllib2.Request):
     def __init__(self, method, *args, **kwargs):
@@ -122,9 +125,11 @@ class Resource(ResourceCommon, object):
         mmaped = None
         if files:
             mmaped = mmap.mmap(files['file'].fileno(), 0, access=mmap.ACCESS_READ)
-            data = mmaped
+            data['file'] = mmaped
 
-        request = RequestWithMethod(method = method, data = data, url = url, headers=headers)
+        print data
+
+        request = RequestWithMethod(method = method, url = url, data = data, headers=headers)
 
         if not files:
             # files imply a content-type of multipart/form-data
@@ -169,7 +174,6 @@ class Resource(ResourceCommon, object):
         s = self._store["serializer"]
 
         files = self._extract_files(data)
-
         # Files require data to be in a dictionary, not string
         if not files:
             data = s.dumps(data)
