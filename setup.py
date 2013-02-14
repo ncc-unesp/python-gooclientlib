@@ -12,7 +12,7 @@ with open('requirements.txt') as reqs:
     ]
 
 setup(
-    name='python-gooclient',
+    name='python-gooclientlib',
     version='0.1.0',
     author='Beraldo Leal',
     author_email='beraldo@ncc.unesp.br',
