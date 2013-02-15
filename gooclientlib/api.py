@@ -8,11 +8,7 @@ import urllib
 import urlparse
 import posixpath
 import pprint
-import itertools
-import mimetools
-import mimetypes
-from cStringIO import StringIO
-
+import MultipartPostHandler
 from django.http import HttpResponse
 from exceptions import *
 from serialize import Serializer
@@ -92,10 +88,14 @@ class Resource(ResourceCommon, object):
         return files
 
     def _debug(self, response, request):
-        # Debug request
-        self._print_debug(request._method,
-                          request._Request__original,
-                          fmt=">> %s %s")
+        try:
+            # Debug request
+            self._print_debug(request._method,
+                              request._Request__original,
+                              fmt=">> %s %s")
+        except AttributeError as e:
+            self._print_debug("Request not found", fmt=">> %s")
+
         for k,v in request.headers.items():
             self._print_debug(k,v, fmt=">> %s: %s")
 
@@ -124,16 +124,17 @@ class Resource(ResourceCommon, object):
         }
         mmaped = None
         if files:
-            mmaped = mmap.mmap(files['file'].fileno(), 0, access=mmap.ACCESS_READ)
-            data['file'] = mmaped
-
-        print data
+#            mmaped = mmap.mmap(files['file'].fileno(), 0, access=mmap.ACCESS_READ)
+            data['file'] = files['file']
+            opener = urllib2.build_opener(MultipartPostHandler.MultipartPostHandler)
+            urllib2.install_opener(opener)
 
         request = RequestWithMethod(method = method, url = url, data = data, headers=headers)
 
         if not files:
-            # files imply a content-type of multipart/form-data
             request.add_header('Content-Type',  s.get_content_type())
+        else:
+            request.add_header('Content-Type',  "application/octet-stream; charset=utf-8")
 
         if auth:
             request.add_header("Authorization", "Basic %s" % self._store["auth"].replace("\n",""))
