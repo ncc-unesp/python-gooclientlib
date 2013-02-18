@@ -116,32 +116,30 @@ class Resource(ResourceCommon, object):
         if self._store["append_slash"] and not url.endswith("/"):
             url += "/"
 
+        params_encoded = urllib.urlencode(params)
+
         if params:
-            url += '?' + urllib.urlencode(params)
+            url += '?' + params_encoded
 
         headers = {
             'accept': s.get_content_type()
         }
         mmaped = None
-        if files:
-#            mmaped = mmap.mmap(files['file'].fileno(), 0, access=mmap.ACCESS_READ)
-            data['file'] = files['file']
-            opener = urllib2.build_opener(MultipartPostHandler.MultipartPostHandler)
-            urllib2.install_opener(opener)
-
-        request = RequestWithMethod(method = method, url = url, data = data, headers=headers)
-
-        if not files:
-            request.add_header('Content-Type',  s.get_content_type())
-        else:
-            request.add_header('Content-Type',  "application/octet-stream; charset=utf-8")
-
-        if auth:
-            request.add_header("Authorization", "Basic %s" % self._store["auth"].replace("\n",""))
 
         try:
-            response = urllib2.urlopen(request)
-            self._debug(response, request)
+            if files:
+    #            mmaped = mmap.mmap(files['file'].fileno(), 0, access=mmap.ACCESS_READ)
+                data['file'] = files['file']
+                opener = urllib2.build_opener(MultipartPostHandler.MultipartPostHandler)
+                response = opener.open(url.encode('ascii'), data)
+            else:
+                request = RequestWithMethod(method = method, url = url, data = data, headers=headers)
+                request.add_header('Content-Type',  s.get_content_type())
+                if auth:
+                    request.add_header("Authorization", "Basic %s" % self._store["auth"].replace("\n",""))
+
+                response = urllib2.urlopen(request)
+#                self._debug(response, request)
         except urllib2.HTTPError as e:
             raise HttpClientError(content = e.msg, code = e.code)
         except urllib2.URLError as e:
