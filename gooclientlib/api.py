@@ -177,7 +177,8 @@ class Resource(ResourceCommon, object):
         if not files:
             data = s.dumps(data)
 
-        return self._request("POST", data=data, params=kwargs, files=files)
+        ret = self._request("POST", data=data, params=kwargs, files=files)
+        return ret
 
     def patch(self, data, **kwargs):
         s = self._store["serializer"]
