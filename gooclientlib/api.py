@@ -3,7 +3,6 @@
 # Now we are using pure urllib2.
 import urllib2
 import base64
-import mmap
 import urllib
 import urlparse
 import posixpath
@@ -124,11 +123,9 @@ class Resource(ResourceCommon, object):
         headers = {
             'accept': s.get_content_type()
         }
-        mmaped = None
 
         try:
             if files:
-    #            mmaped = mmap.mmap(files['file'].fileno(), 0, access=mmap.ACCESS_READ)
                 data['file'] = files['file']
                 opener = urllib2.build_opener(MultipartPostHandler.MultipartPostHandler)
                 response = opener.open(url.encode('ascii'), data)
@@ -145,8 +142,6 @@ class Resource(ResourceCommon, object):
         except urllib2.URLError as e:
             raise HttpServerError(content = e.reason)
         else:
-            if mmaped:
-                mmaped.close()
             self._ = response
             return self._try_to_serialize_response(response)
 
