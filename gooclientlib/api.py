@@ -205,7 +205,7 @@ class API(ResourceCommon, object):
             "base_url": base_url,
             "format": format if format is not None else "json",
             "append_slash": append_slash,
-            "debug": debug,
+            "debug": True if debug == 'True' else False,
             "auth": base64.encodestring('%s:%s' % (auth[0], auth[1])) if auth is not None else None,
             "serializer": s,
         }
