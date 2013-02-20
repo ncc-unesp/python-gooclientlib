@@ -86,9 +86,15 @@ class Resource(ResourceCommon, object):
                 del d[k]
         return files
 
-    def _debug(self, response, request):
+    def _debug_response(self, response):
+        status = response.code
+        reason = response.msg
+        self._print_debug(status, reason, fmt="<< %s %s")
+        for k,v in response.headers.items():
+            self._print_debug(k,v, fmt="<< %s: %s")
+
+    def _debug_request(self, request):
         try:
-            # Debug request
             self._print_debug(request._method,
                               request._Request__original,
                               fmt=">> %s %s")
@@ -100,12 +106,6 @@ class Resource(ResourceCommon, object):
 
         self._print_debug(request.data, fmt=">> %s")
 
-        # Debug responseonse
-        status = response.code
-        reason = response.msg
-        self._print_debug(status, reason, fmt="<< %s %s")
-        for k,v in response.headers.items():
-            self._print_debug(k,v, fmt="<< %s: %s")
 
     def _request(self, method, data=None, params=None, files=None):
         url = self._store["base_url"]
@@ -135,8 +135,9 @@ class Resource(ResourceCommon, object):
                 if auth:
                     request.add_header("Authorization", "Basic %s" % self._store["auth"].replace("\n",""))
 
+                self._debug_request(request)
                 response = urllib2.urlopen(request)
-#                self._debug(response, request)
+                self._debug_response(response)
         except urllib2.HTTPError as e:
             raise HttpClientError(content = e.msg, code = e.code)
         except urllib2.URLError as e:
