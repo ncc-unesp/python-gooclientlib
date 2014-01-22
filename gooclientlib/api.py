@@ -139,8 +139,10 @@ class Resource(ResourceCommon, object):
                 response = urllib2.urlopen(request)
                 self._debug_response(response)
         except urllib2.HTTPError as e:
+            self._print_debug(e.read(), fmt="!! %s")
             raise HttpClientError(content = e.msg, code = e.code)
         except urllib2.URLError as e:
+            self._print_debug(e.read(), fmt="!! %s")
             raise HttpServerError(content = e.reason)
         else:
             self._ = response
