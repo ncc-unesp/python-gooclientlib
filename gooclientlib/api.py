@@ -72,8 +72,8 @@ class Resource(ResourceCommon, object):
 
     def _print_debug(self, *args, **kwargs):
         if self._store["debug"]:
-            print "DEBUG ",
-            print kwargs['fmt'] % args
+            print >> self._store["debug"], "DEBUG ",
+            print >> self._store["debug"], kwargs['fmt'] % args
 
     def _extract_files(self, d):
         """
@@ -207,7 +207,7 @@ class API(ResourceCommon, object):
             "base_url": base_url,
             "format": format if format is not None else "json",
             "append_slash": append_slash,
-            "debug": True if debug == 'True' else False,
+            "debug": debug,
             "auth": base64.encodestring('%s:%s' % (auth[0], auth[1])) if auth is not None else None,
             "serializer": s,
         }
